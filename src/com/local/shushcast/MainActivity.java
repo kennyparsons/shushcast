@@ -21,10 +21,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.util.Collections;
 import java.util.Locale;
 
 public final class MainActivity extends Activity {
@@ -440,7 +436,7 @@ public final class MainActivity extends Activity {
 
     private void refreshUi() {
         boolean running = ShushCastService.isRunning;
-        String ip = getLocalIp();
+        String ip = ShushCastService.getLocalIp();
         String url = "http://" + ip + ":" + ShushCastService.PORT;
         urlTv.setText(url);
 
@@ -494,18 +490,6 @@ public final class MainActivity extends Activity {
         }
 
         errTv.setText(ShushCastService.lastError);
-    }
-
-    private String getLocalIp() {
-        try {
-            for (NetworkInterface nif : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-                if (!nif.isUp() || nif.isLoopback()) continue;
-                for (InetAddress addr : Collections.list(nif.getInetAddresses())) {
-                    if (addr instanceof Inet4Address) return addr.getHostAddress();
-                }
-            }
-        } catch (Exception ignored) {}
-        return "<TV-IP>";
     }
 
     private int dp(int v) {

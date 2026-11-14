@@ -19,3 +19,21 @@ Output APK is written to `build/shushcast.apk` and verified with `apksigner veri
 3. Build with `./build.sh`.
 4. Tag and publish a GitHub Release (e.g., `v1.0.1`) with `build/shushcast.apk` attached as a release asset.
 5. On the TV, select **Check for Updates** -> **Install v1.0.1**.
+
+## Remote Button / Headless Toggle
+
+Shush Cast exports a translucent `Shush Cast Toggle` activity (`com.local.shushcast.ToggleActivity`) so TV button mappers (e.g., tvQuickActions, Button Mapper) or `adb` can toggle casting without covering the active video app with `MainActivity`:
+
+- **App / Activity picker**: Select **Shush Cast Toggle** directly (exposed via `MAIN` / `LAUNCHER` + `LEANBACK_LAUNCHER`).
+- **Intent actions**:
+  - `com.local.shushcast.ACTION_TOGGLE` (default): Toggles casting on/off, prompts for `MediaProjection` over the current app when starting, shows a Toast with the live URL or stopped status, and exits immediately.
+  - `com.local.shushcast.ACTION_START`: Starts casting (or toasts `"Shush Cast already live: http://<ip>:8765"` if already running).
+  - `com.local.shushcast.ACTION_STOP`: Stops casting if running and toasts `"Shush Cast stopped"`.
+
+Example via `adb`:
+
+```bash
+adb shell am start -a com.local.shushcast.ACTION_TOGGLE
+adb shell am start -a com.local.shushcast.ACTION_START
+adb shell am start -a com.local.shushcast.ACTION_STOP
+```

@@ -43,6 +43,27 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ToggleActivity"
+            android:label="Shush Cast Toggle"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.local.shushcast.ACTION_TOGGLE" />
+                <action android:name="com.local.shushcast.ACTION_START" />
+                <action android:name="com.local.shushcast.ACTION_STOP" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".ShushCastService"
             android:enabled="true"

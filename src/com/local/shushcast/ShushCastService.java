@@ -20,6 +20,10 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Process;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.util.Collections;
 
 public final class ShushCastService extends Service {
     public static final String ACTION_START = "com.local.shushcast.START";
@@ -42,6 +46,18 @@ public final class ShushCastService extends Service {
     public static volatile int currentPeakPct = 0;
     public static volatile int activeMuteMode = MUTE_STREAM_MUTE;
     public static volatile String lastError = "";
+
+    public static String getLocalIp() {
+        try {
+            for (NetworkInterface nif : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+                if (!nif.isUp() || nif.isLoopback()) continue;
+                for (InetAddress addr : Collections.list(nif.getInetAddresses())) {
+                    if (addr instanceof Inet4Address) return addr.getHostAddress();
+                }
+            }
+        } catch (Exception ignored) {}
+        return "<TV-IP>";
+    }
 
     private MediaProjection mediaProjection;
     private AudioRecord audioRecord;
