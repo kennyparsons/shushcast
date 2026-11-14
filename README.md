@@ -14,7 +14,7 @@ Output APK is written to `build/shushcast.apk` and verified with `apksigner veri
 
 ## Self-Update & Publishing Releases
 
-1. Set `<string name="github_repo">OWNER/shushcast</string>` in `res/values/strings.xml` to your GitHub `owner/repo`.
+1. Set `<string name="github_repo">kennyparsons/shushcast</string>` in `res/values/strings.xml` to your GitHub `owner/repo`.
 2. Bump `android:versionCode` and `android:versionName` in `AndroidManifest.xml`.
 3. Build with `./build.sh`.
 4. Tag and publish a GitHub Release (e.g., `v1.0.1`) with `build/shushcast.apk` attached as a release asset.
