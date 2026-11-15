@@ -23,6 +23,7 @@
         <span>Shush Cast</span>
       </a>
       <nav class="nav-links" aria-label="Primary">
+        <a class="hide-xs" href="#install">Install</a>
         <a class="hide-xs" href="#how-it-works">How It Works</a>
         <a class="hide-xs" href="#highlights">Highlights</a>
         <a class="hide-xs" href="#compatibility">Compatibility</a>
@@ -40,7 +41,7 @@
             Stream full-level Android TV audio to any phone over Wi-Fi so the living room stays quiet.
           </p>
           <div class="hero-actions">
-            <a id="download-btn" class="btn btn-primary" href="https://github.com/kennyparsons/shushcast/releases/latest">
+            <a id="download-btn" class="btn btn-primary" href="https://github.com/kennyparsons/shushcast/releases/latest/download/shushcast.apk">
               Download Latest APK
             </a>
             <a class="btn btn-secondary" href="https://github.com/kennyparsons/shushcast" target="_blank" rel="noopener">
@@ -48,7 +49,7 @@
             </a>
           </div>
           <p id="release-meta" class="release-meta">
-            Latest release on <a href="https://github.com/kennyparsons/shushcast/releases/latest">GitHub Releases</a>
+            Downloader code <code>4756191</code> · <a href="https://github.com/kennyparsons/shushcast/releases/latest">GitHub Releases</a>
           </p>
         </div>
 
@@ -83,6 +84,60 @@
       </div>
     </section>
 
+    <section id="install" class="section">
+      <div class="container">
+        <div class="section-header">
+          <p class="section-kicker">Sideload</p>
+          <h2 class="section-title">Install on TV (Downloader Code <code>4756191</code>)</h2>
+        </div>
+
+        <div class="install-grid">
+          <article class="install-card install-card-featured">
+            <div class="install-card-head">
+              <div>
+                <p class="install-option">Option A · Recommended on TV</p>
+                <h3>Downloader by AFTVnews</h3>
+              </div>
+              <span class="downloader-code" aria-label="Downloader code 4756191">4756191</span>
+            </div>
+            <ol class="install-steps">
+              <li>
+                Install <strong>Downloader by AFTVnews</strong> from the <strong>Google Play Store</strong> (Google TV / Android TV) or <strong>Amazon Appstore</strong> (Fire TV).
+              </li>
+              <li>
+                Open <strong>Downloader</strong>, type <code>4756191</code>, and select <strong>Go</strong> (always pulls the latest <code>shushcast.apk</code>).
+              </li>
+              <li>
+                If prompted on first sideload, enable <strong>Install unknown apps</strong> for Downloader, then install.
+              </li>
+              <li>
+                After the initial install, future updates can be pulled right inside Shush Cast via <strong>Check for Updates</strong>.
+              </li>
+            </ol>
+          </article>
+
+          <article class="install-card">
+            <div class="install-card-head">
+              <div>
+                <p class="install-option">Option B · Manual / ADB</p>
+                <h3>Direct Latest APK</h3>
+              </div>
+            </div>
+            <p class="install-desc">
+              Download the latest signed APK directly for manual USB/file sideloading or push it from a computer over ADB:
+            </p>
+            <p class="install-url-wrap">
+              <a class="install-url" href="https://github.com/kennyparsons/shushcast/releases/latest/download/shushcast.apk">
+                https://github.com/kennyparsons/shushcast/releases/latest/download/shushcast.apk
+              </a>
+            </p>
+            <pre class="install-cmd"><code>curl -fLO https://github.com/kennyparsons/shushcast/releases/latest/download/shushcast.apk
+adb install -r shushcast.apk</code></pre>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <section id="how-it-works" class="section">
       <div class="container">
         <div class="section-header">
@@ -95,7 +150,7 @@
             <span class="step-num">01</span>
             <h3>Install &amp; Start on TV</h3>
             <p>
-              Install the Shush Cast APK on your Android TV or Google TV device, launch it, and approve system audio capture.
+              Install Shush Cast via Downloader code <code>4756191</code> or the direct APK on Android TV 10+, launch it, and approve system audio capture.
             </p>
           </article>
           <article class="step-item">
@@ -246,7 +301,11 @@
             parts.push(formatBytes(apkAsset.size));
           }
           meta.textContent = '';
-          meta.appendChild(document.createTextNode(parts.join(' · ') + ' · '));
+          meta.appendChild(document.createTextNode(parts.join(' · ') + ' · Downloader '));
+          var codeEl = document.createElement('code');
+          codeEl.textContent = '4756191';
+          meta.appendChild(codeEl);
+          meta.appendChild(document.createTextNode(' · '));
           var link = document.createElement('a');
           link.href = release.html_url || 'https://github.com/kennyparsons/shushcast/releases/latest';
           link.textContent = 'Release notes';

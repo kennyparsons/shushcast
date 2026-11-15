@@ -3,11 +3,34 @@
 Stream full-level Android TV audio to any phone over local Wi-Fi so the living room stays quiet. No companion phone app required—just scan the on-screen QR code and listen in your mobile browser with independent headphone volume.
 
 - **Homepage:** https://kennyparsons.github.io/shushcast/
-- **Latest APK Release:** https://github.com/kennyparsons/shushcast/releases/latest
+- **AFTVnews Downloader Code:** `4756191`
+- **Direct Latest APK:** https://github.com/kennyparsons/shushcast/releases/latest/download/shushcast.apk
+- **Latest Release Notes:** https://github.com/kennyparsons/shushcast/releases/latest
 
 ## Quick Start
 
-1. **Install & Start on TV:** Sideload `shushcast.apk` onto your Android TV (Android 10 / API 29+), open **Shush Cast**, and grant audio capture permission.
+### Install on TV (Android TV 10+ / API 29+)
+
+#### Option A: AFTVnews Downloader (`4756191`)
+
+1. Install **Downloader by AFTVnews** from the **Google Play Store** (Google TV / Android TV) or **Amazon Appstore** (Fire TV).
+2. Open **Downloader**, type **`4756191`**, and select **Go** (always pulls the latest `shushcast.apk`).
+3. If prompted on first sideload, enable **Install unknown apps** for Downloader, then install.
+4. After the initial install, future updates can be pulled right inside Shush Cast via **Check for Updates**.
+
+#### Option B: Direct APK / ADB
+
+- Download the latest signed APK directly: https://github.com/kennyparsons/shushcast/releases/latest/download/shushcast.apk
+- Or install from a computer over ADB:
+
+```bash
+curl -fLO https://github.com/kennyparsons/shushcast/releases/latest/download/shushcast.apk
+adb install -r shushcast.apk
+```
+
+### Connect & Listen
+
+1. **Start on TV:** Open **Shush Cast** on your Android TV and grant audio capture permission.
 2. **Scan QR Code on Phone:** Point your iPhone or Android camera at the QR code on the TV screen to open `http://<tv-ip>:8765` in your browser.
 3. **Listen in Headphones with Client Volume:** Mute or turn down the TV, tap **Listen** on your phone, and control headphone volume independently. Multiple phones can connect at once, each with a `50 ms` default lip-sync buffer (switchable between `25 ms`, `50 ms`, and `120 ms`).
 
