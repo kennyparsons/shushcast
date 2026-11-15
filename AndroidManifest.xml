@@ -46,10 +46,12 @@
         <activity
             android:name=".ToggleActivity"
             android:label="Shush Cast Toggle"
+            android:icon="@drawable/ic_launcher"
+            android:banner="@drawable/banner"
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:taskAffinity=""
+            android:launchMode="singleTop"
             android:excludeFromRecents="true"
-            android:noHistory="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.local.shushcast.ACTION_TOGGLE" />

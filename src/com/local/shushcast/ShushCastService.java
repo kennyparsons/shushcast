@@ -251,9 +251,6 @@ public final class ShushCastService extends Service {
                     }
                 }
             } else if (mode == MUTE_STREAM_MUTE) {
-                if (savedVolume > 0) {
-                    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, savedVolume, 0);
-                }
                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0);
             } else if (mode == MUTE_ZERO_VOL) {
                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
@@ -265,8 +262,10 @@ public final class ShushCastService extends Service {
     private void restoreTvAudioState() {
         if (audioManager == null || savedVolume == -1) return;
         try {
-            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC,
-                    savedMuted ? AudioManager.ADJUST_MUTE : AudioManager.ADJUST_UNMUTE, 0);
+            int dir = (savedVolume > 0 || !savedMuted)
+                    ? AudioManager.ADJUST_UNMUTE
+                    : AudioManager.ADJUST_MUTE;
+            audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, dir, 0);
             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, savedVolume, 0);
         } catch (Throwable ignored) {}
         savedVolume = -1;

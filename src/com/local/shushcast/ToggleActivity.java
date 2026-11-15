@@ -21,10 +21,19 @@ public final class ToggleActivity extends Activity {
     private static final int REQ_CAPTURE = 201;
     private static final int REQ_AUDIO_PERM = 202;
 
+    private boolean pendingCapture = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
     }
 
     private void handleIntent(Intent intent) {
@@ -70,13 +79,23 @@ public final class ToggleActivity extends Activity {
             requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQ_AUDIO_PERM);
             return;
         }
+        if (pendingCapture) {
+            return;
+        }
         MediaProjectionManager mpm = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         if (mpm == null) {
             showToast("MediaProjection unavailable");
             finish();
             return;
         }
-        startActivityForResult(mpm.createScreenCaptureIntent(), REQ_CAPTURE);
+        pendingCapture = true;
+        try {
+            startActivityForResult(mpm.createScreenCaptureIntent(), REQ_CAPTURE);
+        } catch (Throwable t) {
+            pendingCapture = false;
+            showToast("Unable to start screen capture");
+            finish();
+        }
     }
 
     @Override
@@ -97,6 +116,7 @@ public final class ToggleActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_CAPTURE) {
+            pendingCapture = false;
             if (resultCode == RESULT_OK && data != null) {
                 Intent svc = new Intent(this, ShushCastService.class);
                 svc.setAction(ShushCastService.ACTION_START);
