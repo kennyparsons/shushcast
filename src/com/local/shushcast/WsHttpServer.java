@@ -33,6 +33,62 @@ public final class WsHttpServer {
             + "]}"
     ).getBytes(StandardCharsets.UTF_8);
 
+    private static final byte[] SW_JS = (
+            "const CACHE_NAME = 'shushcast-v1';\n"
+            + "const ASSETS = [\n"
+            + "  '/',\n"
+            + "  '/manifest.webmanifest',\n"
+            + "  '/silence.wav',\n"
+            + "  '/apple-touch-icon.png',\n"
+            + "  '/icon-180.png',\n"
+            + "  '/icon-512.png'\n"
+            + "];\n\n"
+            + "self.addEventListener('install', (event) => {\n"
+            + "  event.waitUntil(\n"
+            + "    caches.open(CACHE_NAME)\n"
+            + "      .then((cache) => cache.addAll(ASSETS))\n"
+            + "      .then(() => self.skipWaiting())\n"
+            + "  );\n"
+            + "});\n\n"
+            + "self.addEventListener('activate', (event) => {\n"
+            + "  event.waitUntil(\n"
+            + "    caches.keys()\n"
+            + "      .then((keys) => Promise.all(\n"
+            + "        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))\n"
+            + "      ))\n"
+            + "      .then(() => self.clients.claim())\n"
+            + "  );\n"
+            + "});\n\n"
+            + "self.addEventListener('fetch', (event) => {\n"
+            + "  const req = event.request;\n"
+            + "  if (req.method !== 'GET') return;\n"
+            + "  const url = new URL(req.url);\n"
+            + "  if (url.origin !== self.location.origin) return;\n"
+            + "  if (url.pathname === '/ping' || url.pathname === '/ws' || url.pathname === '/sw.js') return;\n\n"
+            + "  event.respondWith(\n"
+            + "    caches.match(req).then((cached) => {\n"
+            + "      const networkFetch = fetch(req).then((res) => {\n"
+            + "        if (res && res.ok) {\n"
+            + "          const copy = res.clone();\n"
+            + "          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));\n"
+            + "        }\n"
+            + "        return res;\n"
+            + "      });\n"
+            + "      if (cached) {\n"
+            + "        event.waitUntil(networkFetch.catch(() => {}));\n"
+            + "        return cached;\n"
+            + "      }\n"
+            + "      return networkFetch.catch(() => {\n"
+            + "        if (req.mode === 'navigate') {\n"
+            + "          return caches.match('/').then((r) => r || new Response('Offline', { status: 503 }));\n"
+            + "        }\n"
+            + "        return new Response('', { status: 503, statusText: 'Offline' });\n"
+            + "      });\n"
+            + "    })\n"
+            + "  );\n"
+            + "});\n"
+    ).getBytes(StandardCharsets.UTF_8);
+
     private final int port;
     private final byte[] playerHtml;
     private final byte[] icon180Png;
@@ -192,20 +248,29 @@ public final class WsHttpServer {
                 session.runLoop();
                 clients.remove(session);
                 notifyCount();
+            } else if ("/ping".equals(path)) {
+                String pingJson = "{\"ok\":true,\"capturing\":" + capturing
+                        + ",\"clients\":" + clients.size() + "}";
+                sendResponse(out, "application/json; charset=utf-8", "no-store",
+                        pingJson.getBytes(StandardCharsets.UTF_8));
+                socket.close();
+            } else if ("/sw.js".equals(path)) {
+                sendResponse(out, "application/javascript; charset=utf-8", "no-cache", SW_JS);
+                socket.close();
             } else if ("/silence.wav".equals(path)) {
-                sendResponse(out, "audio/wav", "no-store", buildSilentWav());
+                sendResponse(out, "audio/wav", "public, max-age=604800", buildSilentWav());
                 socket.close();
             } else if ("/apple-touch-icon.png".equals(path) || "/icon-180.png".equals(path)) {
-                sendResponse(out, "image/png", "public, max-age=86400", icon180Png);
+                sendResponse(out, "image/png", "public, max-age=604800", icon180Png);
                 socket.close();
             } else if ("/icon-512.png".equals(path)) {
-                sendResponse(out, "image/png", "public, max-age=86400", icon512Png);
+                sendResponse(out, "image/png", "public, max-age=604800", icon512Png);
                 socket.close();
             } else if ("/manifest.webmanifest".equals(path)) {
-                sendResponse(out, "application/manifest+json; charset=utf-8", "no-cache", MANIFEST_JSON);
+                sendResponse(out, "application/manifest+json; charset=utf-8", "public, max-age=86400", MANIFEST_JSON);
                 socket.close();
             } else {
-                sendResponse(out, "text/html; charset=utf-8", "no-store", playerHtml);
+                sendResponse(out, "text/html; charset=utf-8", "public, max-age=86400", playerHtml);
                 socket.close();
             }
         } catch (Exception e) {

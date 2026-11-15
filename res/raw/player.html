@@ -113,10 +113,65 @@
   let targetDelaySec = 0.025;
   let peakLevel = 0;
   let meterTimer = null;
+  let pingTimer = null;
+  let pingInFlight = false;
+
+  if (window.isSecureContext && 'serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
 
   function setStatus(text, mode) {
     statusText.textContent = text;
     dot.className = 'dot' + (mode ? ' ' + mode : '');
+  }
+
+  function stopPingPoll() {
+    if (pingTimer) {
+      clearInterval(pingTimer);
+      pingTimer = null;
+    }
+  }
+
+  function startPingPoll() {
+    if (pingTimer || running) return;
+    pingTimer = setInterval(() => {
+      if (running) {
+        stopPingPoll();
+        return;
+      }
+      checkServer();
+    }, 3000);
+  }
+
+  async function checkServer() {
+    if (pingInFlight) return;
+    pingInFlight = true;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 1500);
+    try {
+      const res = await fetch('/ping', { cache: 'no-store', signal: ctrl.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      stopPingPoll();
+      if (!running) {
+        if (typeof data.clients === 'number') {
+          clientsEl.textContent = 'Listeners: ' + data.clients;
+        }
+        if (data.capturing === false) {
+          setStatus('Connected · TV capture paused', '');
+        } else {
+          setStatus('TV server ready · Tap Start Listening', '');
+        }
+      }
+    } catch (_) {
+      if (!running) {
+        setStatus('You need to start the Shush Cast server on your TV first.', 'err');
+        startPingPoll();
+      }
+    } finally {
+      clearTimeout(timer);
+      pingInFlight = false;
+    }
   }
 
   segBtns.forEach(btn => {
@@ -130,7 +185,7 @@
     });
   });
 
-  function stop() {
+  function teardownConnection() {
     running = false;
     toggleBtn.textContent = 'Start Listening';
     toggleBtn.classList.remove('stop');
@@ -139,10 +194,15 @@
     try { silenceEl.pause(); silenceEl.currentTime = 0; } catch (_) {}
     if (ctx) { try { ctx.close(); } catch (_) {} ctx = null; }
     meter.style.width = '0%';
+  }
+
+  function stop() {
+    teardownConnection();
     setStatus('Stopped', '');
   }
 
   function start() {
+    stopPingPoll();
     let sessInfo = 'no-audioSession';
     try {
       if ('audioSession' in navigator) {
@@ -183,11 +243,14 @@
     ws.onopen = () => setStatus('Connected · Waiting for TV audio...', 'live');
     ws.onclose = () => {
       if (running) {
-        setStatus('Disconnected — tap Start to reconnect', 'err');
-        stop();
+        teardownConnection();
+        setStatus('Disconnected — checking TV server...', 'err');
+        checkServer();
       }
     };
-    ws.onerror = () => setStatus('Connection error', 'err');
+    ws.onerror = () => {
+      if (running) setStatus('Connection error', 'err');
+    };
 
     ws.onmessage = (ev) => {
       if (!running || !ctx) return;
@@ -251,6 +314,19 @@
   toggleBtn.addEventListener('click', () => {
     if (running) stop(); else start();
   });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      if (!running) {
+        checkServer();
+      } else if (ws && ws.readyState !== WebSocket.OPEN && ws.readyState !== WebSocket.CONNECTING) {
+        teardownConnection();
+        checkServer();
+      }
+    }
+  });
+
+  checkServer();
 })();
 </script>
 </body>
