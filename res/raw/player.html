@@ -74,10 +74,10 @@
   <audio id="silence" loop playsinline preload="auto" src="/silence.wav" style="display:none"></audio>
 
   <div class="group">
-    <label><span>Lip-Sync Delay</span><span id="bufLabel">25 ms</span></label>
+    <label><span>Lip-Sync Delay</span><span id="bufLabel">50 ms</span></label>
     <div class="seg">
-      <button data-ms="25" class="active">Tight Sync<br>(25 ms)</button>
-      <button data-ms="50">Low<br>(50 ms)</button>
+      <button data-ms="25">Tight Sync<br>(25 ms)</button>
+      <button data-ms="50" class="active">Low<br>(50 ms)</button>
       <button data-ms="120">Smooth<br>(120 ms)</button>
     </div>
     <div class="hint">Lower = tighter lip-sync with TV. Raise only if Wi-Fi crackles.</div>
@@ -110,7 +110,7 @@
   let sampleRate = 48000;
   let channels = 2;
   let nextPlayTime = 0;
-  let targetDelaySec = 0.025;
+  let targetDelaySec = 0.05;
   let peakLevel = 0;
   let meterTimer = null;
   let pingTimer = null;
