@@ -1,6 +1,9 @@
 package com.local.shushcast;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,8 +20,23 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class WsHttpServer {
+    private static final byte[] MANIFEST_JSON = ("{"
+            + "\"name\":\"Shush Cast\","
+            + "\"short_name\":\"Shush Cast\","
+            + "\"start_url\":\"/\","
+            + "\"display\":\"standalone\","
+            + "\"background_color\":\"#0d1017\","
+            + "\"theme_color\":\"#0d1017\","
+            + "\"icons\":["
+            + "{\"src\":\"/icon-180.png\",\"sizes\":\"180x180\",\"type\":\"image/png\"},"
+            + "{\"src\":\"/icon-512.png\",\"sizes\":\"512x512\",\"type\":\"image/png\"}"
+            + "]}"
+    ).getBytes(StandardCharsets.UTF_8);
+
     private final int port;
     private final byte[] playerHtml;
+    private final byte[] icon180Png;
+    private final byte[] icon512Png;
     private final List<ClientSession> clients = new CopyOnWriteArrayList<>();
     private volatile boolean running = false;
     private volatile boolean capturing = false;
@@ -34,6 +52,21 @@ public final class WsHttpServer {
         this.port = port;
         this.listener = listener;
         this.playerHtml = readRaw(context, R.raw.player);
+        this.icon180Png = renderIconPng(context, R.drawable.ic_launcher, 180);
+        this.icon512Png = renderIconPng(context, R.drawable.ic_launcher, 512);
+    }
+
+    private static byte[] renderIconPng(Context context, int resId, int size) {
+        Drawable drawable = context.getDrawable(resId);
+        if (drawable == null) return new byte[0];
+        Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, size, size);
+        drawable.draw(canvas);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
+        bitmap.recycle();
+        return bos.toByteArray();
     }
 
     private static byte[] readRaw(Context context, int resId) throws IOException {
@@ -143,7 +176,8 @@ public final class WsHttpServer {
                 }
             }
 
-            if (wsKey != null && firstLine.contains(" /ws")) {
+            String path = extractPath(firstLine);
+            if (wsKey != null && "/ws".equals(path)) {
                 String accept = computeWsAccept(wsKey);
                 String resp = "HTTP/1.1 101 Switching Protocols\r\n"
                         + "Upgrade: websocket\r\n"
@@ -158,31 +192,46 @@ public final class WsHttpServer {
                 session.runLoop();
                 clients.remove(session);
                 notifyCount();
-            } else if (firstLine.contains(" /silence.wav")) {
-                byte[] wav = buildSilentWav();
-                String hdr = "HTTP/1.1 200 OK\r\n"
-                        + "Content-Type: audio/wav\r\n"
-                        + "Cache-Control: no-store\r\n"
-                        + "Content-Length: " + wav.length + "\r\n"
-                        + "Connection: close\r\n\r\n";
-                out.write(hdr.getBytes(StandardCharsets.US_ASCII));
-                out.write(wav);
-                out.flush();
+            } else if ("/silence.wav".equals(path)) {
+                sendResponse(out, "audio/wav", "no-store", buildSilentWav());
+                socket.close();
+            } else if ("/apple-touch-icon.png".equals(path) || "/icon-180.png".equals(path)) {
+                sendResponse(out, "image/png", "public, max-age=86400", icon180Png);
+                socket.close();
+            } else if ("/icon-512.png".equals(path)) {
+                sendResponse(out, "image/png", "public, max-age=86400", icon512Png);
+                socket.close();
+            } else if ("/manifest.webmanifest".equals(path)) {
+                sendResponse(out, "application/manifest+json; charset=utf-8", "no-cache", MANIFEST_JSON);
                 socket.close();
             } else {
-                String hdr = "HTTP/1.1 200 OK\r\n"
-                        + "Content-Type: text/html; charset=utf-8\r\n"
-                        + "Cache-Control: no-store\r\n"
-                        + "Content-Length: " + playerHtml.length + "\r\n"
-                        + "Connection: close\r\n\r\n";
-                out.write(hdr.getBytes(StandardCharsets.US_ASCII));
-                out.write(playerHtml);
-                out.flush();
+                sendResponse(out, "text/html; charset=utf-8", "no-store", playerHtml);
                 socket.close();
             }
         } catch (Exception e) {
             try { socket.close(); } catch (IOException ignored) {}
         }
+    }
+
+    private static String extractPath(String requestLine) {
+        int sp1 = requestLine.indexOf(' ');
+        if (sp1 < 0) return "/";
+        int sp2 = requestLine.indexOf(' ', sp1 + 1);
+        String target = sp2 > sp1 ? requestLine.substring(sp1 + 1, sp2) : requestLine.substring(sp1 + 1);
+        int q = target.indexOf('?');
+        return q >= 0 ? target.substring(0, q) : target;
+    }
+
+    private static void sendResponse(OutputStream out, String contentType, String cacheControl, byte[] body)
+            throws IOException {
+        String hdr = "HTTP/1.1 200 OK\r\n"
+                + "Content-Type: " + contentType + "\r\n"
+                + "Cache-Control: " + cacheControl + "\r\n"
+                + "Content-Length: " + body.length + "\r\n"
+                + "Connection: close\r\n\r\n";
+        out.write(hdr.getBytes(StandardCharsets.US_ASCII));
+        out.write(body);
+        out.flush();
     }
 
     private static byte[] buildSilentWav() {
