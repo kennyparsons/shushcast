@@ -20,6 +20,11 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: clip;
+}
+
 html {
   color-scheme: dark;
   scroll-behavior: smooth;
@@ -49,13 +54,29 @@ code {
   border: 1px solid var(--border);
   border-radius: 5px;
   padding: 0.1em 0.4em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .container {
   width: 100%;
-  max-width: var(--max-width);
+  max-width: min(var(--max-width), 100%);
+  min-width: 0;
   margin: 0 auto;
   padding: 0 24px;
+}
+
+.hero-copy,
+.spec-panel,
+.summary-card,
+.install-card,
+.step-item,
+.highlight-item,
+.compat-panel,
+.compat-col {
+  min-width: 0;
+  max-width: 100%;
 }
 
 /* Header */
@@ -74,6 +95,7 @@ code {
   justify-content: space-between;
   height: 64px;
   gap: 20px;
+  min-width: 0;
 }
 
 .brand {
@@ -189,6 +211,10 @@ code {
   font-size: 0.82rem;
   color: var(--text-subtle);
   min-height: 1.4em;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .release-meta a {
@@ -207,8 +233,10 @@ code {
 
 .spec-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding-bottom: 14px;
   margin-bottom: 14px;
   border-bottom: 1px solid var(--border);
@@ -241,14 +269,17 @@ code {
 
 .spec-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 16px;
+  gap: 4px 16px;
   font-size: 0.9rem;
+  min-width: 0;
 }
 
 .spec-row dt {
   color: var(--text-muted);
+  min-width: 0;
 }
 
 .spec-row dd {
@@ -257,6 +288,8 @@ code {
   font-size: 0.84rem;
   color: var(--text);
   text-align: right;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Sections */
@@ -284,6 +317,7 @@ code {
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  overflow-wrap: break-word;
 }
 
 /* Install */
@@ -309,8 +343,13 @@ code {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
   margin-bottom: 18px;
+}
+
+.install-card-head > div {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .install-option {
@@ -371,17 +410,21 @@ code {
 
 .install-url-wrap {
   margin: 0 0 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .install-url {
   display: inline-block;
+  max-width: 100%;
   font-family: var(--font-mono);
   font-size: 0.82rem;
   line-height: 1.5;
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 3px;
-  word-break: break-all;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .install-url:hover,
@@ -395,7 +438,9 @@ code {
   background-color: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .install-cmd code {
@@ -406,6 +451,10 @@ code {
   font-size: 0.8rem;
   line-height: 1.65;
   color: var(--text);
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+  max-width: none;
 }
 
 /* Steps */
@@ -540,34 +589,42 @@ code {
 }
 
 @media (max-width: 860px) {
+  .container {
+    max-width: 100%;
+  }
+
   .hero {
     padding: 52px 0 48px;
   }
 
   .hero-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 32px;
   }
 
   .install-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .steps-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .highlights-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .compat-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 20px;
   }
 }
 
 @media (max-width: 540px) {
+  .container {
+    padding: 0 20px;
+  }
+
   .nav-links {
     gap: 14px;
     font-size: 0.85rem;
@@ -586,6 +643,10 @@ code {
     width: 100%;
   }
 
+  .spec-panel {
+    padding: 20px 18px;
+  }
+
   .highlight-item {
     padding: 22px 20px;
   }
@@ -600,5 +661,17 @@ code {
 
   .compat-panel {
     padding: 22px 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .spec-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .spec-row dd {
+    text-align: left;
   }
 }
