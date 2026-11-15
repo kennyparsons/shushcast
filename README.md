@@ -10,15 +10,29 @@ Requires Android SDK build-tools `34.0.0`, `android-34` platform, and JDK 11+:
 ./build.sh
 ```
 
-Output APK is written to `build/shushcast.apk` and verified with `apksigner verify`.
+Output APK is written to `build/shushcast.apk` and verified with `apksigner verify`. Optional environment variables:
 
-## Self-Update & Publishing Releases
+- `ANDROID_HOME` / `ANDROID_SDK_ROOT`, `ANDROID_BUILD_TOOLS_DIR`, `ANDROID_PLATFORM_JAR`
+- `KEYSTORE_PATH`, `KEYSTORE_PASS`, `KEY_ALIAS`, `KEY_PASS`
+- `VERSION_CODE`, `VERSION_NAME` (overrides manifest version metadata via `aapt2 link`)
 
-1. Set `<string name="github_repo">kennyparsons/shushcast</string>` in `res/values/strings.xml` to your GitHub `owner/repo`.
-2. Bump `android:versionCode` and `android:versionName` in `AndroidManifest.xml`.
-3. Build with `./build.sh`.
-4. Tag and publish a GitHub Release (e.g., `v1.0.1`) with `build/shushcast.apk` attached as a release asset.
-5. On the TV, select **Check for Updates** -> **Install v1.0.1**.
+## Self-Update & Automated Releases
+
+Pushes to `main` (or manual `workflow_dispatch` runs) trigger `.github/workflows/release.yml`, which automatically bumps the SemVer tag (`vX.Y.Z`, starting from `v1.0.0`), builds and signs `build/shushcast.apk`, and publishes a GitHub Release:
+
+- `BREAKING CHANGE` or `<type>!:` commit -> **major** bump
+- `feat:` / `feat(scope):` commit -> **minor** bump
+- All other commits -> **patch** bump
+- `versionCode` is derived from total commit count (`git rev-list --count HEAD`, strictly increasing across releases)
+
+Required GitHub Actions repository secrets:
+
+- `KEYSTORE_BASE64`: Base64-encoded PKCS12/JKS signing keystore
+- `KEYSTORE_PASS`: Keystore password
+- `KEY_ALIAS`: Signing key alias
+- `KEY_PASS`: Signing key password
+
+On the TV, select **Check for Updates** -> **Install vX.Y.Z** to pull the latest release APK from `kennyparsons/shushcast` (configured via `github_repo` in `res/values/strings.xml`).
 
 ## Remote Button / Headless Toggle
 

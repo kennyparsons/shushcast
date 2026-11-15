@@ -1,0 +1,134 @@
+name: Release APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Ensure Android SDK 34 and Build-Tools 34.0.0
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          SDKMANAGER="$(command -v sdkmanager || true)"
+          if [ -z "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$SDK/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n1 || true)"
+          fi
+          MISSING=()
+          [ -f "$SDK/platforms/android-34/android.jar" ] || MISSING+=("platforms;android-34")
+          [ -d "$SDK/build-tools/34.0.0" ] || MISSING+=("build-tools;34.0.0")
+          if [ "${#MISSING[@]}" -gt 0 ]; then
+            if [ -z "$SDKMANAGER" ]; then
+              echo "Error: sdkmanager not found under $SDK" >&2
+              exit 1
+            fi
+            yes | "$SDKMANAGER" --licenses >/dev/null || true
+            "$SDKMANAGER" "${MISSING[@]}"
+          fi
+
+      - name: Compute next SemVer and versionCode
+        id: version
+        run: |
+          set -euo pipefail
+          LAST_TAG="$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1 || true)"
+          if [ -n "$LAST_TAG" ]; then
+            BASE_VER="${LAST_TAG#v}"
+            LOG_RANGE="${LAST_TAG}..HEAD"
+            PREV_COUNT="$(git rev-list --count "$LAST_TAG")"
+          else
+            LAST_TAG="v1.0.0"
+            BASE_VER="1.0.0"
+            LOG_RANGE="HEAD"
+            PREV_COUNT=1
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE_VER"
+          COMMIT_MSGS="$(git log "$LOG_RANGE" --format=%B)"
+
+          if printf '%s\n' "$COMMIT_MSGS" | grep -Eq '(BREAKING CHANGE|^[a-z]+(\([^)]+\))?!:)'; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+          elif printf '%s\n' "$COMMIT_MSGS" | grep -Eq '^feat(\([^)]+\))?:'; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          else
+            PATCH=$((PATCH + 1))
+          fi
+
+          VERSION_NAME="${MAJOR}.${MINOR}.${PATCH}"
+          COMMIT_COUNT="$(git rev-list --count HEAD)"
+          if [ "$COMMIT_COUNT" -le "$PREV_COUNT" ]; then
+            VERSION_CODE=$((PREV_COUNT + 1))
+          else
+            VERSION_CODE="$COMMIT_COUNT"
+          fi
+
+          echo "Last tag: $LAST_TAG"
+          echo "Next version: $VERSION_NAME (versionCode $VERSION_CODE)"
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Build and verify signed APK
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.version_name }}
+          VERSION_CODE: ${{ steps.version.outputs.version_code }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
+        run: |
+          set -euo pipefail
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "Error: KEYSTORE_BASE64 secret is not set" >&2
+            exit 1
+          fi
+          KEYSTORE_PATH="$RUNNER_TEMP/release.keystore"
+          trap 'rm -f "$KEYSTORE_PATH"' EXIT
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '\r\n ' | base64 -d > "$KEYSTORE_PATH"
+          export KEYSTORE_PATH
+          ./build.sh
+          BT="${ANDROID_BUILD_TOOLS_DIR:-$ANDROID_HOME/build-tools/34.0.0}"
+          if [ ! -d "$BT" ]; then
+            BT="$(ls -1d "$ANDROID_HOME/build-tools/"* | sort -V | tail -n1)"
+          fi
+          "$BT/apksigner" verify --verbose build/shushcast.apk
+          "$BT/aapt2" dump badging build/shushcast.apk | head -n 3
+
+      - name: Create tag and publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_NAME: ${{ steps.version.outputs.version_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION_NAME" -m "Shush Cast v$VERSION_NAME"
+          git push origin "v$VERSION_NAME"
+          gh release create "v$VERSION_NAME" build/shushcast.apk \
+            --target main \
+            --title "Shush Cast v$VERSION_NAME" \
+            --generate-notes
