@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shush Cast — Stream Android TV Audio to Your Phone Over Wi-Fi</title>
+  <meta name="description" content="Stream full-level Android TV audio to any phone over local Wi-Fi so the living room stays quiet. Open a QR code in Safari or Chrome—no phone app required.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Shush Cast — Private Android TV Audio on Your Phone">
+  <meta property="og:description" content="Stream full-level Android TV audio to any phone over Wi-Fi so the living room stays quiet. 50 ms default lip-sync, multi-phone support, 100% local LAN.">
+  <meta property="og:url" content="https://kennyparsons.github.io/shushcast/">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-inner">
+      <a class="brand" href="./">
+        <img src="icon.svg" alt="" width="28" height="28">
+        <span>Shush Cast</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a class="hide-xs" href="#how-it-works">How It Works</a>
+        <a class="hide-xs" href="#highlights">Highlights</a>
+        <a class="hide-xs" href="#compatibility">Compatibility</a>
+        <a href="https://github.com/kennyparsons/shushcast" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <h1>Private TV audio on your phone.</h1>
+          <p class="hero-lead">
+            Stream full-level Android TV audio to any phone over Wi-Fi so the living room stays quiet.
+          </p>
+          <div class="hero-actions">
+            <a id="download-btn" class="btn btn-primary" href="https://github.com/kennyparsons/shushcast/releases/latest">
+              Download Latest APK
+            </a>
+            <a class="btn btn-secondary" href="https://github.com/kennyparsons/shushcast" target="_blank" rel="noopener">
+              View on GitHub
+            </a>
+          </div>
+          <p id="release-meta" class="release-meta">
+            Latest release on <a href="https://github.com/kennyparsons/shushcast/releases/latest">GitHub Releases</a>
+          </p>
+        </div>
+
+        <aside class="spec-panel" aria-label="Receiver specifications">
+          <div class="spec-header">
+            <span>Local Receiver</span>
+            <span class="spec-status"><span class="spec-dot" aria-hidden="true"></span>LAN Only</span>
+          </div>
+          <dl class="spec-list">
+            <div class="spec-row">
+              <dt>Phone Client</dt>
+              <dd>Browser / PWA (No app)</dd>
+            </div>
+            <div class="spec-row">
+              <dt>Stream Transport</dt>
+              <dd>HTTP + WebSocket (:8765)</dd>
+            </div>
+            <div class="spec-row">
+              <dt>Audio Format</dt>
+              <dd>48 kHz Stereo PCM</dd>
+            </div>
+            <div class="spec-row">
+              <dt>Lip-Sync Buffer</dt>
+              <dd>50 ms (25 / 50 / 120 ms)</dd>
+            </div>
+            <div class="spec-row">
+              <dt>TV Requirement</dt>
+              <dd>Android TV 10+ (API 29)</dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="section">
+      <div class="container">
+        <div class="section-header">
+          <p class="section-kicker">Workflow</p>
+          <h2 class="section-title">How it works in three steps</h2>
+        </div>
+
+        <div class="steps-grid">
+          <article class="step-item">
+            <span class="step-num">01</span>
+            <h3>Install &amp; Start on TV</h3>
+            <p>
+              Install the Shush Cast APK on your Android TV or Google TV device, launch it, and approve system audio capture.
+            </p>
+          </article>
+          <article class="step-item">
+            <span class="step-num">02</span>
+            <h3>Scan QR Code on Phone</h3>
+            <p>
+              Point any iPhone or Android camera at the on-screen QR code to open the local player page in your mobile browser.
+            </p>
+          </article>
+          <article class="step-item">
+            <span class="step-num">03</span>
+            <h3>Listen in Headphones with Client Volume</h3>
+            <p>
+              Turn the TV volume down or mute it, tap Listen on your phone, and control your own headphone volume directly in the browser.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="highlights" class="section">
+      <div class="container">
+        <div class="section-header">
+          <p class="section-kicker">Capabilities</p>
+          <h2 class="section-title">Built for late-night living rooms</h2>
+        </div>
+
+        <div class="highlights-grid">
+          <article class="highlight-item">
+            <h3>Multiple phones at once</h3>
+            <p>
+              Anyone on your Wi-Fi can scan the same TV QR code simultaneously. Each listener gets their own volume slider and buffer setting.
+            </p>
+          </article>
+          <article class="highlight-item">
+            <h3>iPhone Silent-Mode &amp; Home Screen PWA</h3>
+            <p>
+              Audio plays even when the iPhone hardware mute switch is flipped on. Add the player page to your Home Screen for one-tap standalone launch.
+            </p>
+          </article>
+          <article class="highlight-item">
+            <h3>50 ms low-latency default</h3>
+            <p>
+              Defaults to a <code>50 ms</code> lip-sync buffer and lets each phone switch live between <code>25 ms</code>, <code>50 ms</code>, and <code>120 ms</code> depending on Wi-Fi conditions.
+            </p>
+          </article>
+          <article class="highlight-item">
+            <h3>Remote button toggle</h3>
+            <p>
+              Includes a headless <code>Shush Cast Toggle</code> launcher activity so remote button mappers can start or stop casting without leaving the show you are watching.
+            </p>
+          </article>
+          <article class="highlight-item">
+            <h3>In-app GitHub Releases updater</h3>
+            <p>
+              Check for new versions directly from the TV app and install signed APK updates published on GitHub Releases without touching a USB drive or adb.
+            </p>
+          </article>
+          <article class="highlight-item">
+            <h3>100% local LAN</h3>
+            <p>
+              Your TV serves the web player and audio stream directly over your home router. Zero cloud relays, zero accounts, and zero trackers.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="compatibility" class="section">
+      <div class="container">
+        <div class="section-header">
+          <p class="section-kicker">Compatibility</p>
+          <h2 class="section-title">What works—and honest OS limits</h2>
+        </div>
+
+        <div class="compat-panel">
+          <div class="compat-grid">
+            <div class="compat-col">
+              <h3>Supported setup</h3>
+              <ul>
+                <li><strong>Android TV 10+ (API 29+):</strong> Required for Android's built-in <code>AudioPlaybackCapture</code> API.</li>
+                <li><strong>Non-DRM apps &amp; streams:</strong> Works cleanly with YouTube, SmartTube, Plex, Kodi, IPTV players, local media, and browser streams.</li>
+                <li><strong>Same local network:</strong> Your TV and phones must be on the same Wi-Fi / LAN subnet (client isolation disabled).</li>
+              </ul>
+            </div>
+            <div class="compat-col">
+              <h3>DRM restriction</h3>
+              <p>
+                Apps that enforce hardware/OS DRM audio protection—including <strong>Netflix</strong> and <strong>Hulu</strong>—explicitly prohibit capture via Android's <code>AudioPlaybackCapture</code> API. When those apps play protected content, Android outputs silence to any capture service. This is an OS-level restriction that no unrooted Android TV app can bypass.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>Shush Cast — Local Wi-Fi audio streaming for Android TV</span>
+      <div class="footer-links">
+        <a href="https://github.com/kennyparsons/shushcast" target="_blank" rel="noopener">GitHub Repository</a>
+        <a href="https://github.com/kennyparsons/shushcast/releases" target="_blank" rel="noopener">Releases</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var API_URL = 'https://api.github.com/repos/kennyparsons/shushcast/releases/latest';
+      var btn = document.getElementById('download-btn');
+      var meta = document.getElementById('release-meta');
+
+      function formatBytes(bytes) {
+        if (!bytes || bytes <= 0) return '';
+        var kb = bytes / 1024;
+        if (kb < 1024) return Math.round(kb) + ' KB';
+        return (kb / 1024).toFixed(2) + ' MB';
+      }
+
+      fetch(API_URL, { headers: { 'Accept': 'application/vnd.github+json' } })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (release) {
+          if (!release || !release.tag_name) return;
+          var apkAsset = null;
+          if (Array.isArray(release.assets)) {
+            for (var i = 0; i < release.assets.length; i++) {
+              var asset = release.assets[i];
+              if (asset && typeof asset.name === 'string' && asset.name.slice(-4).toLowerCase() === '.apk') {
+                apkAsset = asset;
+                break;
+              }
+            }
+          }
+
+          btn.textContent = 'Download Latest APK (' + release.tag_name + ')';
+          if (apkAsset && apkAsset.browser_download_url) {
+            btn.href = apkAsset.browser_download_url;
+          } else if (release.html_url) {
+            btn.href = release.html_url;
+          }
+
+          var parts = [release.tag_name];
+          if (apkAsset && apkAsset.size) {
+            parts.push(formatBytes(apkAsset.size));
+          }
+          meta.textContent = '';
+          meta.appendChild(document.createTextNode(parts.join(' · ') + ' · '));
+          var link = document.createElement('a');
+          link.href = release.html_url || 'https://github.com/kennyparsons/shushcast/releases/latest';
+          link.textContent = 'Release notes';
+          link.target = '_blank';
+          link.rel = 'noopener';
+          meta.appendChild(link);
+        })
+        .catch(function () {
+          // Keep default fallback link to GitHub Releases.
+        });
+    })();
+  </script>
+</body>
+</html>

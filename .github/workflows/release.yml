@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'res/**'
+      - 'AndroidManifest.xml'
+      - 'build.sh'
   workflow_dispatch:
 
 permissions:
